@@ -8,6 +8,8 @@ pub fn add(left: usize, right: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::mpsc::channel;
+    use std::thread;
     use crate::client::client::Client;
     use crate::protocol::{LibEvent, Message};
     use crate::server::server::Server;
@@ -15,15 +17,36 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let mut  server = Server::new();
-        server.begin_listening();
+        let (tx,rx) = channel();
+        println!("hello");
+        let handler = thread::spawn(move || {
+
+            let mut  server = Server::new();
+            server.begin_listening();
+            loop {
+                server.retrieve_messages();
+                tx.send(server.pop_message()).expect("Unable to send on channel");
+            }
+
+
+        });
+
+
+
+
         let mut client = Client::new(String::from("127.0.0.1:80"));
 
         client.send_message(Message::LibEvent(LibEvent::Ready));
+        println!("message sent");
 
-        server.retrieve_messages();
-        println!("{:?}",server.pop_message());
+        let receiver = thread::spawn(move || {
+            let value = rx.recv().expect("Unable to receive from channel");
+            println!("{:?}",value);
+        });
+
+
     }
+
 }
 
 

@@ -7,6 +7,7 @@ pub struct Client{
 impl Client{
     pub fn new(ip: String)-> Self{
         let stream = TcpStream::connect(ip.to_string()).unwrap();
+        println!("hello!");
         Self{
             stream
         }
