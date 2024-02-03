@@ -1,4 +1,6 @@
 use std::net::{Ipv4Addr, TcpStream};
+use std::thread::sleep;
+use std::time::Duration;
 use crate::protocol::Message;
 
 pub struct Client{
@@ -6,6 +8,7 @@ pub struct Client{
 }
 impl Client{
     pub fn new(ip: String)-> Self{
+        sleep(Duration::from_millis(1000));
         let stream = TcpStream::connect(ip.to_string()).unwrap();
         println!("hello!");
         Self{
