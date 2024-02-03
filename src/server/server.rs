@@ -12,7 +12,7 @@ pub struct Server{
 }
 impl Server{
     pub fn new()->Self{
-        let listener = TcpListener::bind("127.0.0.1:80").unwrap();
+        let listener = TcpListener::bind("127.0.0.1:42597").unwrap();
         println!("Connected on port 80");
         Self{
             listener,
