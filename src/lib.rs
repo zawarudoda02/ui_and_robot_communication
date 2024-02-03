@@ -10,6 +10,8 @@ pub fn add(left: usize, right: usize) -> usize {
 mod tests {
     use std::sync::mpsc::channel;
     use std::thread;
+    use std::thread::sleep;
+    use std::time::Duration;
     use crate::client::client::Client;
     use crate::protocol::{LibEvent, Message};
     use crate::server::server::Server;
@@ -24,8 +26,10 @@ mod tests {
             let mut  server = Server::new();
             server.begin_listening();
             loop {
-                server.retrieve_messages();
-                tx.send(server.pop_message()).expect("Unable to send on channel");
+                /*println!("Retrieve message ha restituito: {:?}",*/ server.retrieve_messages()/*)*/;
+                if let Some(x) = server.pop_message() {
+                    tx.send(x).expect("Unable to send on channel");
+                }
             }
 
 
@@ -37,14 +41,19 @@ mod tests {
         let mut client = Client::new(String::from("127.0.0.1:42597"));
 
         client.send_message(Message::LibEvent(LibEvent::Ready));
+        client.send_message(Message::LibEvent(LibEvent::Terminated));
+        client.send_message(Message::LibEvent(LibEvent::ToolUsed));
+
         println!("message sent");
 
         let receiver = thread::spawn(move || {
-            let value = rx.recv().expect("Unable to receive from channel");
-            println!("Ho ricevuto con successo il messaggio {:?}",value);
+            loop {
+                let value = rx.recv().expect("Unable to receive from channel");
+                println!("Ho ricevuto con successo il messaggio {:?}", value);
+            }
         });
 
-
+        sleep(Duration::from_millis(1000));
     }
 
 }
