@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::io::BufReader;
 use std::net::{TcpListener, TcpStream};
 use std::time::Duration;
+use bincode::Error;
 
 use crate::protocol::Message;
 
@@ -13,18 +14,20 @@ pub struct Server{
 impl Server{
     pub fn new()->Self{
         let listener = TcpListener::bind("127.0.0.1:42597").unwrap();
-        println!("Connected on port 80");
+        println!("Connected on port 42597");
         Self{
             listener,
             stream:None,
             messages:VecDeque::new()
         }
 
+
     }
     pub fn begin_listening(&mut self){
 
             let (socket,addr) = self.listener.accept().unwrap();
             println!("This client connected: {:?}",addr);
+            socket.set_nonblocking(true).expect("Ah boh cazz ne so");
 
             self.stream = Some(socket);
 
@@ -33,7 +36,8 @@ impl Server{
         self.messages.clear();
         self.stream = None;
     }
-    pub fn retrieve_messages(&mut self)->Result<(),()>{
+    pub fn retrieve_messages(&mut self)->Result<(), Error>{
+
         match &mut self.stream{
             None => {return Ok(());}
             Some(stream) => {
@@ -44,7 +48,7 @@ impl Server{
 
                     }
                     Err(e)=>{
-                        return Err(());
+                        return Err(e);
                     }
                 }
             }
