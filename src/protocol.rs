@@ -5,12 +5,33 @@ use robotics_lib::world::tile::{Content, Tile};
 use serde::{Deserialize, Serialize};
 use crate::protocol::LibEvent::{AddedToBackpack, RemovedFromBackpack};
 
+
+///
+///
+///
+/// enum representing the different messages that can be sent using the protocol
+/// the messages are serialized using bincode
+///
+#[derive(Debug,Clone,Serialize,Deserialize)]
+pub enum Message{
+    LibEvent(LibEvent),
+    LibError(EventError),
+    WorldInfo{
+        world_size:(usize),
+        spawn_point:(usize,usize)
+    }
+}
+
+/// a serializable enum representing the robotic-lib Events, along with other custom events
 #[derive(Debug,Clone,Serialize,Deserialize)]
 pub enum LibEvent {
     /// Robot has been initialized and its lifecycle has started
     Ready,
     /// Robot has ended its lifecycle
     Terminated,
+
+    EndOfTick,
+
     /// [Event] fired when time of the day changes, contains the new [EnvironmentalConditions]
     TimeChanged(EnvironmentalConditions),
 
@@ -43,6 +64,7 @@ pub enum LibEvent {
     DiscoveredTiles(Vec<(Tile,(usize,usize))>),
 
     ToolUsed
+
 }
 
 impl From<Event> for LibEvent {
@@ -61,6 +83,7 @@ impl From<Event> for LibEvent {
         }
     }
 }
+/// a serializable enum representing the robotic-lib LibError
 #[derive(Debug,Clone,Serialize,Deserialize)]
 pub enum EventError{
     NotEnoughEnergy,
@@ -109,8 +132,4 @@ impl From<LibError> for EventError{
     }
 }
 
-#[derive(Debug,Clone,Serialize,Deserialize)]
-pub enum Message{
-    LibEvent(LibEvent),
-    LibError(EventError)
-}
+
