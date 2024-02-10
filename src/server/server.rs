@@ -1,5 +1,4 @@
 use crate::errors::CommError;
-use bincode::Error;
 use std::collections::VecDeque;
 use std::io::{BufReader, ErrorKind};
 use std::net::{TcpListener, TcpStream};
@@ -32,12 +31,14 @@ impl Server {
         }
     }
 
-    pub fn begin_listening(&mut self) {
-        let (socket, addr) = self.listener.accept().unwrap();
+    pub fn begin_listening(&mut self) -> Result<(),()>{
+        let (socket, addr) = self.listener.accept().map_err(|_| { () })?;
         println!("This client connected: {:?}", addr);
-        socket.set_read_timeout(Some(Duration::from_secs(10)));
+        socket.set_read_timeout(Some(Duration::from_secs(10))).map_err(|_| { () })?;
 
         self.stream = Some(BufReader::new(socket));
+
+        Ok(())
     }
     pub fn stop_listening(&mut self) {
         self.messages.clear();
@@ -65,18 +66,19 @@ impl Server {
 }
 //private methods
 impl Server{
+    #[allow(dead_code)]
     fn pop_message(&mut self) -> Option<Message> {
         self.messages.pop_front()
     }
     fn get_stream(&mut self) -> Result<&mut BufReader<TcpStream>, CommError> {
         match &mut self.stream {
-            None => return Err(CommError::NoClient),
+            None => Err(CommError::NoClient),
             Some(x) => {
                 let a = x.get_ref();
                 if let Err(e) = Server::check_connection(&a){
                     return Err(e);
                 }
-                return Ok((x));
+                Ok(x)
             }
         }
     }
@@ -85,7 +87,7 @@ impl Server{
 
         match stream.peek(&mut buff) {
             Ok(_) => {
-                return Ok(());
+                Ok(())
             }
             Err(e) => {
                 return match e.kind() {
@@ -112,10 +114,10 @@ impl Server{
             Ok(e) => {
                 match e{
                     Message::LibEvent(LibEvent::EndOfTick)=>{
-                        control_flow=  ControlFlow::TickEnded
+                        control_flow = ControlFlow::TickEnded
                     }
                     Message::LibEvent(LibEvent::Terminated)=>{
-                        control_flow= ControlFlow::Terminated
+                        control_flow = ControlFlow::Terminated
                     }
                     _ => {}
                 }

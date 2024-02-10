@@ -1,4 +1,4 @@
-use std::net::{Ipv4Addr, Shutdown, TcpStream};
+use std::net::{Shutdown, TcpStream};
 use std::thread::sleep;
 use std::time::Duration;
 use crate::protocol::Message;
@@ -28,7 +28,7 @@ impl Client{
 
     }
     pub fn disconnect(&mut self){
-        self.stream.shutdown(Shutdown::Both);
+        let _ = self.stream.shutdown(Shutdown::Both);
     }
 
 }

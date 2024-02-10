@@ -17,7 +17,7 @@ pub enum Message{
     LibEvent(LibEvent),
     LibError(EventError),
     WorldInfo{
-        world_size:(usize),
+        world_size: usize,
         spawn_point:(usize,usize)
     }
 }
