@@ -4,6 +4,7 @@ use std::io::{BufReader, ErrorKind};
 use std::net::{TcpListener, TcpStream};
 use std::time::Duration;
 
+
 use crate::protocol::{ LibEvent, Message};
 
 use crate::tick::Tick;
@@ -50,18 +51,30 @@ impl Server {
     pub fn get_tick(&mut self)->Result<Tick,CommError>{
         loop{
             let a = self.retrieve_message()?;
-            if let ControlFlow::TickEnded  | ControlFlow::Terminated = a{
+
+
+            if let Message::LibEvent(LibEvent::Terminated)  | Message::LibEvent(LibEvent::EndOfTick)= a{
                 let mut vec = vec![];
+
                 while let Some(x) = self.messages.pop_front(){
 
                     vec.push(x);
-                    if let Message::LibEvent(LibEvent::Terminated)| Message::LibEvent(LibEvent::EndOfTick) = vec.last().unwrap(){
-                        return Ok(Tick::new(vec))
-                    }
-                }
-            }
 
+                }
+                vec.push(a);
+                return Ok(Tick::new(vec));
+            }
+            self.messages.push_back(a);
         }
+    }
+    ///function to be called ONLY at the beginning, it gives a tick containing the World Info
+    pub fn get_world_info(&mut self)->Result<Tick,CommError>{
+        let a = self.retrieve_message()?;
+        if let Message::WorldInfo { .. } = a{
+            return Ok(Tick::new(vec![a]));
+        }
+        return Err(CommError::FirstMessageIsNotWorldInfo);
+
     }
 }
 //private methods
@@ -107,34 +120,20 @@ impl Server{
         }
     }
     ///retrieves a message, returning an error if there are no more messages being broadcast
-    fn retrieve_message(&mut self) -> Result<ControlFlow, CommError> {
+    fn retrieve_message(&mut self) -> Result<Message, CommError> {
         let stream = self.get_stream()?;
-        let mut control_flow = ControlFlow::SameTick;
+
         match bincode::deserialize_from(stream) {
             Ok(e) => {
-                match e{
-                    Message::LibEvent(LibEvent::EndOfTick)=>{
-                        control_flow = ControlFlow::TickEnded
-                    }
-                    Message::LibEvent(LibEvent::Terminated)=>{
-                        control_flow = ControlFlow::Terminated
-                    }
-                    _ => {}
-                }
-                self.messages.push_back(e);
+                return Ok(e);
+
             }
             Err(e) => {
                 return Err(CommError::DeserializationError(e));
             }
         }
 
-        return Ok(control_flow);
+
     }
 }
-///Enum used to check whether the message read is part of the same tick, the tick has ended or a robot's lifecycle has been terminated
-#[derive(Debug,Clone)]
-enum ControlFlow{
-    Terminated,
-    TickEnded,
-    SameTick
-}
+

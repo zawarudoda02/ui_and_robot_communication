@@ -5,5 +5,6 @@ pub enum CommError{
     ClientDisconnected,
     TimedOut,
     DeserializationError(bincode::Error),
-    Timeout
+    Timeout,
+    FirstMessageIsNotWorldInfo
 }

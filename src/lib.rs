@@ -1,8 +1,8 @@
-pub mod protocol;
-pub mod client;
-pub mod server;
-pub mod errors;
-pub mod tick;
+mod protocol;
+mod client;
+mod server;
+mod errors;
+mod tick;
 
 pub use protocol::{LibEvent,Message,EventError};
 pub use errors::CommError;
