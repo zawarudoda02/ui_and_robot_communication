@@ -70,8 +70,9 @@ impl Server {
     ///function to be called ONLY at the beginning, it gives a tick containing the World Info
     pub fn get_world_info(&mut self)->Result<Tick,CommError>{
         let a = self.retrieve_message()?;
-        if let Message::WorldInfo { .. } = a{
-            return Ok(Tick::new(vec![a]));
+        let b = self.retrieve_message()?;
+        if let (Message::LibEvent(LibEvent::Ready), Message::WorldInfo {..}) = (a,b){
+            return Ok(Tick::new(vec![a,b]));
         }
         return Err(CommError::FirstMessageIsNotWorldInfo);
 
