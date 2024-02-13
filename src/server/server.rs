@@ -71,7 +71,7 @@ impl Server {
     pub fn get_world_info(&mut self)->Result<Tick,CommError>{
         let a = self.retrieve_message()?;
         let b = self.retrieve_message()?;
-        if let (Message::LibEvent(LibEvent::Ready), Message::WorldInfo {..}) = (a,b){
+        if let (Message::LibEvent(LibEvent::Ready), Message::WorldInfo {..}) = (a.clone(),b.clone()){
             return Ok(Tick::new(vec![a,b]));
         }
         return Err(CommError::FirstMessageIsNotWorldInfo);
