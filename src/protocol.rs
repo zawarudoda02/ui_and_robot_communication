@@ -73,7 +73,7 @@ impl From<Event> for LibEvent {
             Event::Ready => {Self::Ready}
             Event::Terminated => {Self::Terminated}
             Event::TimeChanged(e) => {Self::TimeChanged(e)}
-            Event::DayChanged(e) => {Self::TimeChanged(e)}
+            Event::DayChanged(e) => {Self::DayChanged(e)}
             Event::EnergyRecharged(e) => {Self::EnergyRecharged(e)}
             Event::EnergyConsumed(e) => {Self::EnergyConsumed(e)}
             Event::Moved(a, b) => {Self::Moved(a,b)}
